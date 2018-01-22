@@ -37,4 +37,4 @@ namespace LunchAgent.Entities
     }
 
 }
-}
+
