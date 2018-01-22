@@ -1,0 +1,25 @@
+﻿{
+  "restaurants": [
+    {
+      "restaurant": "Canada",
+      "url": "http://www.menicka.cz/api/iframe/?id=6&bg=vhite&color=black&size=18&datum=dnes"
+    },
+    {
+      "restaurant": "Flip",
+      "url": "http://www.menicka.cz/api/iframe/?id=24bg=vhite&color=black&size=18&datum=dnes"
+    },
+    {
+      "restaurant": "Puor",
+      "url": "http://www.menicka.cz/api/iframe/?id=2992&bg=vhite&color=black&size=18&datum=dnes"
+    },
+    {
+      "restaurant": "Celnice",
+      "url": "http://www.menicka.cz/api/iframe/?id=17&bg=vhite&color=black&size=18&datum=dnes"
+    },
+    {
+      "restaurant": "Blok",
+      "url": "http://www.menicka.cz/api/iframe/?id=4482&bg=vhite&color=black&size=18&datum=dnes"
+    }
+
+  ] 
+}
