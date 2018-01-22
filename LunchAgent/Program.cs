@@ -6,7 +6,7 @@ namespace LunchAgent
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+
         }
     }
 }
