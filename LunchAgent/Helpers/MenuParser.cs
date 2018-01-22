@@ -2,29 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using LunchAgent.Entities;
 
 namespace LunchAgent.Helpers
 {
-    public class LoaderHelper
+    public class MenuParser
     {
-        private readonly WebClient _webClient;
+        private readonly HttpClient _webClient;
         private readonly Logger _logger;
 
-        public LoaderHelper()
+        public MenuParser()
         {
-            _webClient = new WebClient();
+            _webClient = new HttpClient();
             _logger = new Logger();
         }
 
-        public List<MenuItem> GetMenuFromMenicka(string url)
+        public async Task<List<MenuItem>> GetMenuFromMenicka(string url)
         {
             var result = new List<MenuItem>();
 
             var document = new HtmlDocument();
 
-            document.Load(_webClient.OpenRead(url));
+            var response = await _webClient.GetAsync(url);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            document.LoadHtml(content);
 
             result = ParseMenuFromMenicka(document.DocumentNode);
 
