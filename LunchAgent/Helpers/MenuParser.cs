@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -11,22 +11,15 @@ namespace LunchAgent.Helpers
 {
     public class MenuParser
     {
-        private readonly HttpClient _webClient;
-        private readonly Logger _logger;
-
-        public MenuParser()
+        public static async Task<List<MenuItem>> GetMenuFromMenicka(string url)
         {
-            _webClient = new HttpClient();
-            _logger = new Logger();
-        }
+            var webClient = new HttpClient();
 
-        public async Task<List<MenuItem>> GetMenuFromMenicka(string url)
-        {
             var result = new List<MenuItem>();
 
             var document = new HtmlDocument();
 
-            var response = await _webClient.GetAsync(url);
+            var response = await webClient.GetAsync(url);
 
             var content = await response.Content.ReadAsStringAsync();
 
@@ -37,7 +30,7 @@ namespace LunchAgent.Helpers
             return result;
         }
 
-        private List<MenuItem> ParseMenuFromMenicka(HtmlNode todayMenu)
+        private static List<MenuItem> ParseMenuFromMenicka(HtmlNode todayMenu)
         {
             var result = new List<MenuItem>();
 

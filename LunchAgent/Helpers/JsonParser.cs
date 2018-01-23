@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -10,22 +10,17 @@ namespace LunchAgent.Helpers
 {
     public static class JsonParser
     {
-        public static Dictionary<string,List<RestaurantSettings>> ParseFile(params string[] files)
+        public static List<RestaurantSettings> ParseFile(string file)
         {
-            var result = new Dictionary<string, List<RestaurantSettings>>();
+            var result = new List<RestaurantSettings>();
 
-            foreach (var file in files)
+            using (var reader = new JsonTextReader(File.OpenText(file)))
             {
-                using (var reader = new JsonTextReader(File.OpenText(file)))
-                {
-                    var jsonString = JToken.ReadFrom(reader).ToString();
+                var jsonString = JToken.ReadFrom(reader).ToString();
 
-                    var rootObject = JObject.Parse(jsonString)["restaurants"];
+                var rootObject = JObject.Parse(jsonString)["restaurants"];
 
-                    var filename = Path.GetFileNameWithoutExtension(file);
-
-                    result[filename] = rootObject.ToObject<List<RestaurantSettings>>();
-                }
+                result = rootObject.ToObject<List<RestaurantSettings>>();
             }
 
             return result;

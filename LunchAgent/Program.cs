@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,19 +14,58 @@ namespace LunchAgent
     {
         static void Main(string[] args)
         {
-            var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            ParameterContainer parameters;
+            try
+            {
+                parameters = LoadArguments(args);
+            }
+            catch (ApplicationException e)
+            {
+                Console.WriteLine(e);
+                return;
+            }
 
-            var files = Directory.GetFiles(path + "/JsonData");
+            var path = parameters.JsonFilePath;
 
-            var a = JsonParser.ParseFile(files);
+            var parsedJson = JsonParser.ParseFile(path);
 
-            var parser = new MenuParser();
+            foreach (var menuSetting in parsedJson)
+            {
+                
+            }
 
-            var task = parser.GetMenuFromMenicka(a.First().Value.First().Url);
 
-            task.Wait();
+        }
 
-            var result = task.Result;
+        public static ParameterContainer LoadArguments(string[] args)
+        {
+            var result = new ParameterContainer();
+
+            if(args.Length != 2 )
+                throw new ApplicationException("Invalid number of arguments. Use --help for information about argument usage");
+
+            var jsonFilePath = args[0];
+            var slackFilePath = args[1];
+
+            if(File.Exists(jsonFilePath) == false)
+                throw new ApplicationException($"Could not find json source file: {jsonFilePath}");
+
+            if (File.Exists(slackFilePath) == false)
+                throw new ApplicationException($"Could not find json source file: {slackFilePath}");
+
+            if(Path.GetExtension(jsonFilePath) != ".json")
+                throw new ApplicationException("Invalid extestion of json source file");
+
+            result.JsonFilePath = jsonFilePath;
+            result.SlackFilePath = slackFilePath;
+
+            return result;
+        }
+
+        public struct ParameterContainer
+        {
+            public string JsonFilePath { get; set; }
+            public string SlackFilePath { get; set; }
         }
     }
 }
