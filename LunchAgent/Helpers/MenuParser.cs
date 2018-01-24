@@ -11,21 +11,26 @@ namespace LunchAgent.Helpers
 {
     public class MenuParser
     {
-        public static async Task<List<MenuItem>> GetMenuFromMenicka(string url)
+        public static async Task<List<Tuple<RestaurantSettings, List<MenuItem>>>> GetMenuFromMenicka(List<RestaurantSettings> restaurantSettingses)
         {
-            var webClient = new HttpClient();
+            var result = new List<Tuple<RestaurantSettings, List<MenuItem>>>();
 
-            var result = new List<MenuItem>();
+            var webClient = new HttpClient();
 
             var document = new HtmlDocument();
 
-            var response = await webClient.GetAsync(url);
+            foreach (var setting in restaurantSettingses)
+            {
+                var response = await webClient.GetAsync(setting.Url);
 
-            var content = await response.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync();
 
-            document.LoadHtml(content);
+                document.LoadHtml(content);
 
-            result = ParseMenuFromMenicka(document.DocumentNode);
+                var parsedMenu = ParseMenuFromMenicka(document.DocumentNode);
+
+                result.Add(Tuple.Create(setting, parsedMenu));
+            }
 
             return result;
         }

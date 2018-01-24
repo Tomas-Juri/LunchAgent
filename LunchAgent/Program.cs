@@ -29,12 +29,9 @@ namespace LunchAgent
 
             var parsedJson = JsonParser.ParseFile(path);
 
-            foreach (var menuSetting in parsedJson)
-            {
-                
-            }
+            var parsedMenus = MenuParser.GetMenuFromMenicka(parsedJson).Result;
 
-
+            SlackPoster.PostMenu(parsedMenus, parameters.SlackFilePath);
         }
 
         public static ParameterContainer LoadArguments(string[] args)
