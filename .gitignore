@@ -260,3 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 LunchAgent/JsonData/SlackBotKey.txt
+LunchAgent/Properties/launchSettings.json
