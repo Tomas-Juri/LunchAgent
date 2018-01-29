@@ -6,35 +6,37 @@ using System.Text;
 using LunchAgent.Entities;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace LunchAgent.Helpers
 {
     class SlackPoster
     {
+        private static readonly string Uri = "https://slack.com/api/chat.postMessage";
+
         public static string PostMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> parsedMenus, string slackFilePath)
         {
-            var slackKey = System.IO.File.ReadAllLines(slackFilePath).First();
+            string result = null;
 
-            if (string.IsNullOrEmpty(slackKey))
-            {
-                throw new ApplicationException($"Cannot post to slack because file '{slackFilePath}' contains no slack key on first line");
-            }
-
-            var payload = new Payload();
-
-            payload.Text = FormatMenuForSlack(parsedMenus);
+            var payload = new Payload(slackFilePath);
+            //payload.Text = FormatMenuForSlack(parsedMenus);
+            payload.Text = "hello there";
 
             using (var client = new WebClient())
             {
                 var data = new NameValueCollection();
+                data["header"] = "{ \"Content-Type\" : \"application/json\" }";
+                data["payload"] = payload.ToJson().Replace(@"\", string.Empty);
 
-                data["payload"] = payload.ToJson();
+                var response = client.UploadValues(Uri,"POST", data);
 
-                var response = client.UploadValues(slackKey, "POST", data);
-
-                return new UTF8Encoding().GetString(response);
+                result = new UTF8Encoding().GetString(response);
             }
+
+            return result;
         }
 
         public static string FormatMenuForSlack(List<Tuple<RestaurantSettings, List<MenuItem>>> parsedMenus)
@@ -45,14 +47,31 @@ namespace LunchAgent.Helpers
 
     public class Payload
     {
+        [JsonProperty("token")]
+        public string Token { get; set; }
+
         [JsonProperty("channel")]
         public string Channel { get; set; }
 
-        [JsonProperty("username")]
-        public string Username { get; set; }
-
         [JsonProperty("text")]
         public string Text { get; set; }
+
+        public Payload(string slackFilePath)
+        {
+            var lines = File.ReadAllLines(slackFilePath);
+
+            try
+            {
+                this.Token = lines[0];
+                this.Channel = lines[1];
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error while loading slack file. Please enter valid token on first line and valid channel id to second line");
+                throw;
+            }
+
+        }
 
         public string ToJson()
         {

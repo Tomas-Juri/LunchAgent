@@ -11,10 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="JsonData\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <None Update="JsonData\SlackBotKey.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="JsonData\ZlinMenicka.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
