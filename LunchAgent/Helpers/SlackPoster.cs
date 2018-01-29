@@ -28,8 +28,9 @@ namespace LunchAgent.Helpers
             using (var client = new WebClient())
             {
                 var data = new NameValueCollection();
-                data["header"] = "{ \"Content-Type\" : \"application/json\" }";
-                data["payload"] = payload.ToJson().Replace(@"\", string.Empty);
+                data["token"] = payload.Token;
+                data["channel"] = payload.Channel;
+                data["text"] = "it works";
 
                 var response = client.UploadValues(Uri,"POST", data);
 
