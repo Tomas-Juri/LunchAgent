@@ -27,12 +27,16 @@ namespace LunchAgent.Helpers
                 {
                     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-                    var data = Encoding.GetEncoding(1250).GetString(client.DownloadData(setting.Url));
+                    var data = setting.Url.Contains("makalu")
+                        ? Encoding.UTF8.GetString(client.DownloadData(setting.Url))
+                        : Encoding.GetEncoding(1250).GetString(client.DownloadData(setting.Url));
 
                     document.LoadHtml(data);
                 }
 
-                var parsedMenu = ParseMenuFromMenicka(document.DocumentNode);
+                var parsedMenu = setting.Url.Contains("makalu")
+                    ? ParseMenuFromMakalu(document.DocumentNode)
+                    : ParseMenuFromMenicka(document.DocumentNode);
 
                 result.Add(Tuple.Create(setting, parsedMenu));
             }
@@ -68,6 +72,63 @@ namespace LunchAgent.Helpers
             }
 
             return result;
+        }
+
+        private static List<MenuItem> ParseMenuFromMakalu(HtmlNode todayMenu)
+        {
+            var result = new List<MenuItem>();
+
+            var todayString = GetTodayInCzech();
+
+            var todayNode = string.Join(" ", todayMenu.SelectNodes(".//div[contains(@class,TJStrana)]").Where(x => x.GetClasses().Contains("TJStrana")).Select(x=> x.InnerHtml));
+
+            var start = todayNode.IndexOf(todayString) + 13;
+
+            var end = todayNode.Substring(start, todayNode.Length-start).IndexOf("Mix denn");
+
+            var body = todayNode.Substring(start, end);
+
+            var soup = new MenuItem();
+
+            soup.FoodType = FoodType.Soup;
+            soup.Description = string.Join(" / ",
+                Regex.Matches(body, "[A-ř]+ (polévka|polevka)").Select(x => x.Value));
+
+            var matches = Regex.Matches(body, "<b>.+?<\\/b>").Select(x => x.Value).ToList();
+
+            result.Add(soup);
+
+            foreach (var match in matches)
+            {
+                var item = new MenuItem();
+
+                item.FoodType = FoodType.Main;
+                item.Price = Regex.Match(match, "(?='>)(.*)(?=</span)").Value.Substring(2);
+                item.Description = Regex.Match(match, "(?=<b>)(.+?)(?=<span)").Value.Substring(3) + "  ";
+
+                result.Add(item);
+            }
+
+            return result;
+        }
+
+        private static string GetTodayInCzech()
+        {
+            switch (DateTime.Today.DayOfWeek)
+            {
+                case DayOfWeek.Friday:
+                    return "Pátek";
+                case DayOfWeek.Monday:
+                    return "Pondělí";
+                case DayOfWeek.Thursday:
+                    return "Čtvrtek";
+                case DayOfWeek.Tuesday:
+                    return "Pátek";
+                case DayOfWeek.Wednesday:
+                    return "Středa";
+            }
+
+            return string.Empty;
         }
     }
 }

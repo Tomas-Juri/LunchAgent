@@ -46,7 +46,7 @@ namespace LunchAgent.Helpers
 
                 var formatedFood = string.Join(Environment.NewLine, parsedMenu.Item2);
 
-                result.Add(string.Format("*{0}*{1}{2}", parsedMenu.Item1.Name, Environment.NewLine, formatedFood));
+                result.Add(string.Format("{0}*     {1}*{2}{3}",parsedMenu.Item1.Emoji, parsedMenu.Item1.Name, Environment.NewLine, formatedFood));
             }
 
             return string.Join(Environment.NewLine + Environment.NewLine, result);
