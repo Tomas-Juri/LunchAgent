@@ -19,19 +19,14 @@ namespace LunchAgent.Helpers
 
         public static string PostMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> parsedMenus, string slackFilePath)
         {
-            string result = null;
+            var result = string.Empty;
 
-            var payload = new Payload(slackFilePath);
-            //payload.Text = FormatMenuForSlack(parsedMenus);
-            payload.Text = "hello there";
+            var data = GetDataFromFile(slackFilePath);
+
+            data["text"] = FormatMenuForSlack(parsedMenus);
 
             using (var client = new WebClient())
             {
-                var data = new NameValueCollection();
-                data["token"] = payload.Token;
-                data["channel"] = payload.Channel;
-                data["text"] = "it works";
-
                 var response = client.UploadValues(Uri,"POST", data);
 
                 result = new UTF8Encoding().GetString(response);
@@ -42,29 +37,30 @@ namespace LunchAgent.Helpers
 
         public static string FormatMenuForSlack(List<Tuple<RestaurantSettings, List<MenuItem>>> parsedMenus)
         {
-            return string.Empty;
+            var result = new List<string>();
+
+            foreach (var parsedMenu in parsedMenus)
+            {
+                parsedMenu.Item2.Find(x => x.FoodType == FoodType.Soup).Description =
+                    "_" + parsedMenu.Item2.Find(x => x.FoodType == FoodType.Soup).Description + "_";
+
+                var formatedFood = string.Join(Environment.NewLine, parsedMenu.Item2);
+
+                result.Add(string.Format("*{0}*{1}{2}", parsedMenu.Item1.Name, Environment.NewLine, formatedFood));
+            }
+
+            return string.Join(Environment.NewLine + Environment.NewLine, result);
         }
-    }
 
-    public class Payload
-    {
-        [JsonProperty("token")]
-        public string Token { get; set; }
-
-        [JsonProperty("channel")]
-        public string Channel { get; set; }
-
-        [JsonProperty("text")]
-        public string Text { get; set; }
-
-        public Payload(string slackFilePath)
+        private static NameValueCollection GetDataFromFile(string filePath)
         {
-            var lines = File.ReadAllLines(slackFilePath);
+            var result = new NameValueCollection();
+            var lines = File.ReadAllLines(filePath);
 
             try
             {
-                this.Token = lines[0];
-                this.Channel = lines[1];
+                result["token"] = lines[0];
+                result["channel"] = lines[1];
             }
             catch (Exception)
             {
@@ -72,11 +68,7 @@ namespace LunchAgent.Helpers
                 throw;
             }
 
-        }
-
-        public string ToJson()
-        {
-            return JsonConvert.SerializeObject(this);
+            return result;
         }
     }
 }
