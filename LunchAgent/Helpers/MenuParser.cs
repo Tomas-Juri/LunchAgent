@@ -92,7 +92,7 @@ namespace LunchAgent.Helpers
 
             soup.FoodType = FoodType.Soup;
             soup.Description = string.Join(" / ",
-                Regex.Matches(body, "[A-ř]+ (polévka|polevka)").Select(x => x.Value));
+                Regex.Matches(body, "(?=span><br>).+? (polévka|polevka)").Select(x => x.Value)).Substring(9);
 
             var matches = Regex.Matches(body, "<b>.+?<\\/b>").Select(x => x.Value).ToList();
 
