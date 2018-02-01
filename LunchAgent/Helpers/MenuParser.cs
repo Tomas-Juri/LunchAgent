@@ -116,16 +116,16 @@ namespace LunchAgent.Helpers
         {
             switch (DateTime.Today.DayOfWeek)
             {
-                case DayOfWeek.Friday:
-                    return "Pátek";
                 case DayOfWeek.Monday:
                     return "Pondělí";
-                case DayOfWeek.Thursday:
-                    return "Čtvrtek";
                 case DayOfWeek.Tuesday:
-                    return "Pátek";
+                    return "Úterý";
                 case DayOfWeek.Wednesday:
                     return "Středa";
+                case DayOfWeek.Thursday:
+                    return "Čtvrtek";
+                case DayOfWeek.Friday:
+                    return "Pátek";
             }
 
             return string.Empty;
