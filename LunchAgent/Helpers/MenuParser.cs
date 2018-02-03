@@ -34,11 +34,18 @@ namespace LunchAgent.Helpers
                     document.LoadHtml(data);
                 }
 
-                var parsedMenu = setting.Url.Contains("makalu")
-                    ? ParseMenuFromMakalu(document.DocumentNode)
-                    : ParseMenuFromMenicka(document.DocumentNode);
+                try
+                {
+                    var parsedMenu = setting.Url.Contains("makalu")
+                        ? ParseMenuFromMakalu(document.DocumentNode)
+                        : ParseMenuFromMenicka(document.DocumentNode);
 
-                result.Add(Tuple.Create(setting, parsedMenu));
+                    result.Add(Tuple.Create(setting, parsedMenu));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             return result;
@@ -88,15 +95,19 @@ namespace LunchAgent.Helpers
 
             var body = todayNode.Substring(start, end);
 
-            var soup = new MenuItem();
+            var soupString = Regex.Match(body, "Polévky:<br>.+?(?=(1.))");
 
-            soup.FoodType = FoodType.Soup;
-            soup.Description = string.Join(" / ",
-                Regex.Matches(body, "(?=span><br>).+? (polévka|polevka)").Select(x => x.Value)).Substring(9);
+            foreach (Match item in Regex.Matches(soupString.Value, "[r]>.+?(?=<[bs])"))
+            {
+                var newItem = new MenuItem();
+
+                newItem.FoodType = FoodType.Soup;
+                newItem.Description = item.Value.Substring(2);
+
+                result.Add(newItem);
+            }
 
             var matches = Regex.Matches(body, "<b>.+?<\\/b>").Select(x => x.Value).ToList();
-
-            result.Add(soup);
 
             foreach (var match in matches)
             {
@@ -126,6 +137,11 @@ namespace LunchAgent.Helpers
                     return "Čtvrtek";
                 case DayOfWeek.Friday:
                     return "Pátek";
+#if DEBUG
+                case DayOfWeek.Saturday:
+                case DayOfWeek.Sunday:
+                    return "Pátek";
+#endif
             }
 
             return string.Empty;

@@ -41,8 +41,7 @@ namespace LunchAgent.Helpers
 
             foreach (var parsedMenu in parsedMenus)
             {
-                parsedMenu.Item2.Find(x => x.FoodType == FoodType.Soup).Description =
-                    "_" + parsedMenu.Item2.Find(x => x.FoodType == FoodType.Soup).Description + "_";
+                parsedMenu.Item2.FindAll(x => x.FoodType == FoodType.Soup).ForEach( x=> x.Description = "_" + x.Description + "_");
 
                 var formatedFood = string.Join(Environment.NewLine, parsedMenu.Item2);
 
