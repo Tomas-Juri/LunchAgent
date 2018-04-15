@@ -2,35 +2,41 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Text;
 using LunchAgent.Entities;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace LunchAgent.Helpers
+namespace LunchLib.Helpers
 {
-    class SlackPoster
+    public class SlackHelper
     {
         private static readonly string PostMessageUri = "https://slack.com/api/chat.postMessage";
         private static readonly string UpdateMessageUri = "https://slack.com/api/chat.update";
         private static readonly string ChatHistoryUri = "https://slack.com/api/channels.history";
 
-        public static string PostMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> parsedMenus, string slackFilePath)
+        private SlackSetting _slackConfiguration;
+
+        public SlackHelper(SlackSetting configuration)
         {
-            var result = string.Empty;
+            _slackConfiguration = configuration;
+        }
 
-            var data = GetDataFromFile(slackFilePath);
+        public string PostMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> menus)
+        {
+            string result;
 
-            data["text"] = FormatMenuForSlack(parsedMenus);
+            var data = new NameValueCollection
+            {
+                ["token"] = _slackConfiguration.BotToken,
+                ["channel"] = _slackConfiguration.ChannelName,
+                ["bot_id"] = _slackConfiguration.BotId,
+                ["text"] = FormatMenuForSlack(menus)
+            };
 
             using (var client = new WebClient())
             {
-                var response = client.UploadValues(PostMessageUri,"POST", data);
+                var response = client.UploadValues(PostMessageUri, "POST", data);
 
                 result = new UTF8Encoding().GetString(response);
             }
@@ -38,30 +44,21 @@ namespace LunchAgent.Helpers
             return result;
         }
 
-        public static string FormatMenuForSlack(List<Tuple<RestaurantSettings, List<MenuItem>>> parsedMenus)
-        {
-            var result = new List<string>();
 
-            foreach (var parsedMenu in parsedMenus)
+        public string UpdateMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> menus)
+        {
+            var timestamp = GetLastMessageTimestamp();
+
+            if (string.IsNullOrEmpty(timestamp))
+                return string.Empty;
+
+            var data = new NameValueCollection
             {
-                parsedMenu.Item2.FindAll(x => x.FoodType == FoodType.Soup).ForEach( x=> x.Description = "_" + x.Description + "_");
-
-                var formatedFood = string.Join(Environment.NewLine, parsedMenu.Item2);
-
-                result.Add(string.Format("{0}*     {1}*{2}{3}",parsedMenu.Item1.Emoji, parsedMenu.Item1.Name, Environment.NewLine, formatedFood));
-            }
-
-            return string.Join(Environment.NewLine + Environment.NewLine, result);
-        }
-
-        internal static void UpdateMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> menus, string slackFilePath)
-        {
-            var timestamp = GetLastMessageTimestamp(slackFilePath);
-
-            if(string.IsNullOrEmpty(timestamp))
-                return;
-
-            var data = GetDataFromFile(slackFilePath);
+                ["token"] = _slackConfiguration.BotToken,
+                ["channel"] = _slackConfiguration.ChannelName,
+                ["bot_id"] = _slackConfiguration.BotId,
+                ["text"] = FormatMenuForSlack(menus)
+            };
 
             data.Remove("bot_id");
 
@@ -72,13 +69,18 @@ namespace LunchAgent.Helpers
             {
                 var response = client.UploadValues(UpdateMessageUri, "POST", data);
 
-                var result = new UTF8Encoding().GetString(response);
+                return new UTF8Encoding().GetString(response);
             }
         }
 
-        private static string GetLastMessageTimestamp(string slackFilePath)
+        private string GetLastMessageTimestamp()
         {
-            var data = GetDataFromFile(slackFilePath);
+            var data = new NameValueCollection
+            {
+                ["token"] = _slackConfiguration.BotToken,
+                ["channel"] = _slackConfiguration.ChannelName,
+                ["bot_id"] = _slackConfiguration.BotId,
+            };
 
             var timeStamp = DateTime.Today;
             var result = "";
@@ -100,7 +102,7 @@ namespace LunchAgent.Helpers
 
                     string rawTs = arElement.ts;
 
-                    var tsInt = (int) Convert.ToDouble(rawTs.ToString().Replace(".", ","));
+                    var tsInt = (int)Convert.ToDouble(rawTs.Replace(".", ","));
 
                     var tsDate = (new DateTime(1970, 1, 1)).AddSeconds(tsInt);
 
@@ -115,34 +117,20 @@ namespace LunchAgent.Helpers
             return result;
         }
 
-        private static NameValueCollection GetDataFromFile(string filePath)
+        private static string FormatMenuForSlack(List<Tuple<RestaurantSettings, List<MenuItem>>> parsedMenus)
         {
-            var result = new NameValueCollection();
-            var lines = File.ReadAllLines(filePath);
+            var result = new List<string>();
 
-            try
+            foreach (var parsedMenu in parsedMenus)
             {
-                result["token"] = lines[0];
-                result["channel"] = lines[1];
-                result["bot_id"] = lines[2];
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error while loading slack file. Please enter valid token on first line and valid channel id to second line");
-                throw;
+                parsedMenu.Item2.FindAll(x => x.FoodType == FoodType.Soup).ForEach(x => x.Description = "_" + x.Description + "_");
+
+                var formatedFood = string.Join(Environment.NewLine, parsedMenu.Item2);
+
+                result.Add($"{parsedMenu.Item1.Emoji}*     {parsedMenu.Item1.Name}*{Environment.NewLine}{formatedFood}");
             }
 
-            return result;
-        }
-
-        public class SlackMessage
-        {
-            [JsonProperty]
-            public string Text { get; set; }
-            [JsonProperty]
-            public string Type { get; set; }
-            [JsonProperty("ts")]
-            public string TimeStamp { get; set; }
+            return string.Join(Environment.NewLine + Environment.NewLine, result);
         }
     }
 }
