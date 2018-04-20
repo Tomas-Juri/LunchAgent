@@ -1,15 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using LunchAgent.Entities;
 using LunchAgent.Helpers;
 using LunchLib.Helpers;
 
-namespace LunchAgent
+namespace LunchAgent_Console
 {
     class Program
     {
@@ -57,7 +57,7 @@ namespace LunchAgent
 
         private static bool CheckMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> menus)
         {
-            return !menus.Any(x => x.Item2.Any(y => y.Description == "Pro tento den nebylo zad�no menu."));
+            return !menus.Any(x => x.Item2.Any(y => y.Description == "Pro tento den nebylo zadáno menu."));
         }
 
         private static void ScheduleUdate()
@@ -106,7 +106,7 @@ namespace LunchAgent
             result.JsonFilePath = args[0];
             result.SlackFilePath = args[1];
 
-            if (Enum.TryParse(typeof(ProgramOption), args[2], out var parseResult) == false)
+            if (Enum.TryParse(args[2], out ProgramOption parseResult) == false)
                 throw new ArgumentException("Invalid option");
 
             result.Option = (ProgramOption)parseResult;
