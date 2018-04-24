@@ -5,8 +5,5 @@ IF NOT EXIST "%here%done.txt" (
 		dotnet LunchAgent.dll JsonData\RestaurantConfig.json JsonData\SlackBotKey.txt 1
 	) ELSE (
 		dotnet LunchAgent.dll JsonData\RestaurantConfig.json JsonData\SlackBotKey.txt 2
-	IF NOT EXIST "%here%update.txt" (
-		echo. 2>done.txt
-	)
 	)
 )
