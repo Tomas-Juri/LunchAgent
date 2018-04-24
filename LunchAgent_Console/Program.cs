@@ -36,7 +36,7 @@ namespace LunchAgent_Console
                     }
                     else
                     {
-                        DeleteUpdate();
+                        ScheduleEnd();
                     }
 
                     var slackHelper = new SlackHelper(slackSettings);
@@ -72,7 +72,7 @@ namespace LunchAgent_Console
             }
         }
 
-        private static void DeleteUpdate()
+        private static void ScheduleEnd()
         {
             var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -81,6 +81,13 @@ namespace LunchAgent_Console
             if (File.Exists(filename) == true)
             {
                 File.Delete(filename);
+            }
+
+            filename = location + "\\done.txt";
+
+            if (File.Exists(filename) == false)
+            {
+                File.WriteAllLines(filename, new[] { DateTime.Now.ToString() });
             }
         }
 
