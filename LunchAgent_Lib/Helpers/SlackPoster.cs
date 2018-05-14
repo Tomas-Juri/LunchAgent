@@ -57,7 +57,6 @@ namespace LunchLib.Helpers
                 ["token"] = _slackConfiguration.BotToken,
                 ["channel"] = _slackConfiguration.ChannelName,
                 ["bot_id"] = _slackConfiguration.BotId,
-                ["text"] = FormatMenuForSlack(menus)
             };
 
             data.Remove("bot_id");
