@@ -57,7 +57,7 @@ namespace LunchAgent_Console
 
         private static bool CheckMenu(List<Tuple<RestaurantSettings, List<MenuItem>>> menus)
         {
-            return !menus.Any(x => x.Item2.Any(y => y.Description == "Pro tento den nebylo zadáno menu."));
+            return !menus.Any(x => x.Item2.Any(y => y.Description.Contains("Pro tento den nebylo zadáno menu.")));
         }
 
         private static void ScheduleUdate()
