@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "LunchAgent": {
-      "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\juricka\\Desktop\\NFW\\Projects\\LunchAgent-Relase\\JsonData\\RestaurantConfig.json C:\\Users\\juricka\\Desktop\\NFW\\Projects\\LunchAgent-Relase\\JsonData\\SlackConfig.json 2"
-    }
-  }
-}
